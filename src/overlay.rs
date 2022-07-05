@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{style::AppStyle, AppState};
+use crate::{style::AppStyle, AppState, Keep};
 
 pub struct OverlayPlugin;
 
@@ -36,7 +36,7 @@ fn setup_overlay(mut commands: Commands, style: Res<AppStyle>) {
             style: Style {
                 align_self: AlignSelf::FlexStart,
                 position_type: PositionType::Absolute,
-                position: UiRect::<Val> {
+                position: Rect::<Val> {
                     bottom: Val::Px(100.0),
                     left: Val::Px(10.0),
                     ..Default::default()
@@ -60,13 +60,14 @@ fn setup_overlay(mut commands: Commands, style: Res<AppStyle>) {
             ..Default::default()
         })
         .insert(Name::new("ui State"))
+        .insert(Keep)
         .insert(AppStateText);
 
     commands
         .spawn_bundle(TextBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                position: UiRect::<Val> {
+                position: Rect::<Val> {
                     left: Val::Px(10.0),
                     bottom: Val::Px(10.0),
                     ..Default::default()
@@ -91,6 +92,7 @@ fn setup_overlay(mut commands: Commands, style: Res<AppStyle>) {
             },
             ..Default::default()
         })
+        .insert(Keep)
         .insert(Name::new("ui FPS"))
         .insert(FpsText);
 }

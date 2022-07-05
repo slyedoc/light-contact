@@ -23,4 +23,4 @@ impl Plugin for IntroPlugin {
     }
 }
 
-fn setup(mut commands: Commands, style: Res<AppStyle>) {}
+fn setup(mut _commands: Commands, _style: Res<AppStyle>) {}

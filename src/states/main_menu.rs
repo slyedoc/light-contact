@@ -1,4 +1,4 @@
-use bevy::{app::AppExit, prelude::*};
+use bevy::{app::AppExit, prelude::*, math::vec3, render::camera::Camera3d};
 
 use crate::{cleanup_system, enviroment::*, fadeout::Fadeout, style::AppStyle, AppState};
 
@@ -16,13 +16,13 @@ impl Plugin for MainMenuPlugin {
         app.add_system_set(
             SystemSet::on_enter(AppState::MainMenu)
                 .with_system(setup)
-                .with_system(spawn_light)
+                .with_system(spawn_light)                
                 .with_system(spawn_ground),
         )
         .add_system_set(
             SystemSet::on_resume(AppState::MainMenu)
                 .with_system(setup)
-                .with_system(spawn_light)
+                .with_system(spawn_light)                
                 .with_system(spawn_ground),
         )
         .add_system_set(SystemSet::on_update(AppState::MainMenu).with_system(button_system))
@@ -30,7 +30,18 @@ impl Plugin for MainMenuPlugin {
     }
 }
 
-fn setup(mut commands: Commands, style: Res<AppStyle>, mut clear_color: ResMut<ClearColor>) {
+fn setup(
+    mut commands: Commands,
+    style: Res<AppStyle>,
+    mut clear_color: ResMut<ClearColor>,
+    mut camera_query: Query<&mut Transform, With<Camera3d>>,    
+) {
+    // move camera
+     for mut t in camera_query.iter_mut() {
+         t.translation = vec3(0.0, 2.0, -5.0);
+         //camera_trans.look_at(Vec3::Y, Vec3::ZERO);
+     }
+
     clear_color.0 = Color::GRAY;
 
     // Title Bar
@@ -39,7 +50,7 @@ fn setup(mut commands: Commands, style: Res<AppStyle>, mut clear_color: ResMut<C
             style: Style {
                 position_type: PositionType::Absolute,
                 size: Size::new(Val::Percent(100.0), Val::Percent(20.0)),
-                position: UiRect {
+                position: Rect {
                     top: Val::Percent(10.0),
                     ..Default::default()
                 },
@@ -87,7 +98,7 @@ fn setup(mut commands: Commands, style: Res<AppStyle>, mut clear_color: ResMut<C
                         .spawn_bundle(TextBundle {
                             style: Style {
                                 align_self: AlignSelf::Center,
-                                margin: UiRect::all(Val::Px(5.0)),
+                                margin: Rect::all(Val::Px(5.0)),
                                 ..Default::default()
                             },
                             text: Text::with_section(
@@ -111,7 +122,7 @@ fn setup(mut commands: Commands, style: Res<AppStyle>, mut clear_color: ResMut<C
         .spawn_bundle(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                position: UiRect {
+                position: Rect {
                     top: Val::Percent(40.0),
                     left: Val::Percent(30.0),
                     ..Default::default()
@@ -158,7 +169,7 @@ fn create_menu_button(
     parent
         .spawn_bundle(ButtonBundle {
             style: Style {
-                margin: UiRect::all(Val::Px(10.0)),
+                margin: Rect::all(Val::Px(10.0)),
                 align_items: AlignItems::Center,
                 align_content: AlignContent::Center,
                 justify_content: JustifyContent::Center,

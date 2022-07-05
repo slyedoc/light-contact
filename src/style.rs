@@ -45,14 +45,13 @@ impl FromWorld for AppStyle {
 
 fn button_color_system(
     mut interaction_query: Query<
-        (&Interaction, &mut UiColor, &Children),
+        (&Interaction, &mut UiColor),
         (Changed<Interaction>, With<Button>),
     >,
-    mut text_query: Query<&mut Text>,
-    mut style: Res<AppStyle>,
+    
+    style: Res<AppStyle>,
 ) {
-    for (interaction, mut color, children) in interaction_query.iter_mut() {
-        let mut text = text_query.get_mut(children[0]).unwrap();
+    for (interaction, mut color) in interaction_query.iter_mut() {        
         match *interaction {
             Interaction::Clicked => {
                 *color = style.pressed_button.into();
