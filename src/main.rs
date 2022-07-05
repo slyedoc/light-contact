@@ -3,8 +3,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bevy::prelude::{App, Msaa, WindowDescriptor};
-use bevy::DefaultPlugins;
 use bevy::window::PresentMode;
+use bevy::DefaultPlugins;
 use light_contact::AppPlugin;
 
 fn main() {

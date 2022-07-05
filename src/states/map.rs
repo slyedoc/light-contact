@@ -1,7 +1,7 @@
 use crate::{
     assets::SpaceAssets, cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState,
 };
-use bevy::{core::FixedTimestep, math::vec3, prelude::*, render::camera::Camera3d, gltf::Gltf};
+use bevy::{core::FixedTimestep, gltf::Gltf, math::vec3, prelude::*, render::camera::Camera3d};
 use rand::{thread_rng, Rng};
 
 pub struct MapPlugin;
@@ -20,8 +20,7 @@ impl Plugin for MapPlugin {
             SystemSet::on_update(AppState::Map)
                 .with_run_criteria(FixedTimestep::step(DELTA_TIME))
                 .with_system(interact_bodies)
-                .with_system(integrate.after(interact_bodies))
-                //.with_system(spawn_test_system),
+                .with_system(integrate.after(interact_bodies)), //.with_system(spawn_test_system),
         )
         .add_system_set(SystemSet::on_exit(AppState::Map).with_system(cleanup_system));
     }

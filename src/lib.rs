@@ -15,13 +15,13 @@ mod style;
 //use bevy_infinite_grid::{InfiniteGridPlugin};
 
 use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_kira_audio::Audio;
 use bevy_kira_audio::AudioPlugin;
 use fadeout::*;
 use overlay::*;
 use sly_camera_controller::{CameraController, CameraControllerPlugin};
 use states::*;
 use style::*;
-use bevy_kira_audio::{Audio};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum AppState {

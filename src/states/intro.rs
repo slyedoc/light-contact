@@ -1,13 +1,8 @@
 use bevy::prelude::*;
-use bevy_kira_audio::{Audio};
+use bevy_kira_audio::Audio;
 
 use crate::{
-    assets::AudioAssets,
-    cleanup_system,
-    enviroment::*,
-    escape_system,
-    style::AppStyle,
-    AppState,
+    assets::AudioAssets, cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState,
 };
 
 pub struct IntroPlugin;

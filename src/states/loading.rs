@@ -1,23 +1,26 @@
-use bevy::{prelude::* };
+use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 
-use crate::{cleanup_system, style::AppStyle, AppState, assets::{AudioAssets, SpaceAssets}};
+use crate::{
+    assets::{AudioAssets, SpaceAssets},
+    cleanup_system,
+    style::AppStyle,
+    AppState,
+};
 
 pub struct LoadingPlugin;
 
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-
-        app
-            .add_loading_state(
-                LoadingState::new(AppState::Loading)
-                    .continue_to_state(AppState::MainMenu)
-                    .with_collection::<AudioAssets>()
-                    .with_collection::<SpaceAssets>()
-            )
-            .add_system_set(SystemSet::on_enter(AppState::Loading).with_system(setup))
-            .add_system_set(SystemSet::on_update(AppState::Loading).with_system(update_text))
-            .add_system_set(SystemSet::on_exit(AppState::Loading).with_system(cleanup_system));
+        app.add_loading_state(
+            LoadingState::new(AppState::Loading)
+                .continue_to_state(AppState::MainMenu)
+                .with_collection::<AudioAssets>()
+                .with_collection::<SpaceAssets>(),
+        )
+        .add_system_set(SystemSet::on_enter(AppState::Loading).with_system(setup))
+        .add_system_set(SystemSet::on_update(AppState::Loading).with_system(update_text))
+        .add_system_set(SystemSet::on_exit(AppState::Loading).with_system(cleanup_system));
     }
 }
 
