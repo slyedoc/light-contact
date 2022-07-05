@@ -1,103 +1,23 @@
-//#![allow(warnings)]
-#![allow(clippy::type_complexity)]
-//use bevy_inspector_egui::prelude::*;
-use bevy::{app::AppExit, prelude::*, window::PresentMode};
-//use bevy_prototype_debug_lines::{DebugLines, DebugLinesPlugin};
-//mod grid;
-//use grid::*;
-mod assets;
-mod enviroment;
-mod fadeout;
-mod overlay;
-mod states;
-mod style;
+#![allow(clippy::forget_non_drop)]
+// disable console on windows for release builds
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-//use bevy_infinite_grid::{InfiniteGridPlugin};
-use assets::*;
-use bevy_asset_loader::prelude::*;
-use bevy_inspector_egui::WorldInspectorPlugin;
-use fadeout::*;
-use overlay::*;
-use sly_camera_controller::{CameraController, CameraControllerPlugin};
-use states::*;
-use style::*;
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
-pub enum AppState {
-    AssetLoading,
-    MainMenu,
-    Intro,
-    Map,
-}
-
-pub struct MainCamera(pub Entity);
+use bevy::prelude::{App, Msaa, WindowDescriptor};
+use bevy::DefaultPlugins;
+use bevy::window::PresentMode;
+use light_contact::AppPlugin;
 
 fn main() {
     App::new()
+        .insert_resource(Msaa { samples: 1 })
         .insert_resource(WindowDescriptor {
             present_mode: PresentMode::Fifo,
-            ..default()
+            width: 800.,
+            height: 600.,
+            title: "Light Contact".to_string(), // ToDo
+            ..Default::default()
         })
-        .add_state(AppState::AssetLoading)
-        .add_loading_state(
-            LoadingState::new(AppState::AssetLoading)
-                .continue_to_state(AppState::MainMenu)
-                .with_collection::<SpaceAssets>(),
-        )
-  
         .add_plugins(DefaultPlugins)
-        //.add_plugin(InfiniteGridPlugin)
-        .add_plugin(StylePlugin)
-        .add_plugin(FadeoutPlugin)
-        .add_plugin(OverlayPlugin)
-        .add_plugin(CameraControllerPlugin)
-        .add_plugin(WorldInspectorPlugin::new())
-        .add_plugin(StatePlugin)
-        // global starup
-        .add_startup_system_to_stage(StartupStage::Startup, setup)
+        .add_plugin(AppPlugin)
         .run();
-}
-
-fn setup(mut commands: Commands) {
-    // cameras
-    commands
-        .spawn_bundle(UiCameraBundle::default())
-        .insert(Keep);
-
-    commands
-        .spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_xyz(0.0, 2.0, -2.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..default()
-        })
-        // Add our controller
-        .insert(CameraController::default())
-        .insert(Keep);
-
-    // commands.spawn_bundle(InfiniteGridBundle::default())
-    // .insert(Keep);
-}
-
-#[derive(Component)]
-pub struct Keep;
-
-fn cleanup_system(mut commands: Commands, q: Query<Entity, Without<Keep>>) {
-    for e in q.iter() {
-        commands.entity(e).despawn_recursive();
-    }
-}
-
-fn escape_system(
-    mut fadeout: EventWriter<Fadeout>,
-    mut app_exit: EventWriter<AppExit>,
-    state: Res<State<AppState>>,
-    mut input: ResMut<Input<KeyCode>>,
-) {
-    if input.just_pressed(KeyCode::Escape) {
-        if state.current().eq(&AppState::MainMenu) {
-            app_exit.send(AppExit);
-        } else {
-            fadeout.send(Fadeout::Pop);
-        }
-        input.clear();
-    }
 }

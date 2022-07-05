@@ -23,7 +23,7 @@ impl AppStyle {
         TextStyle {
             font: self.font.clone(),
             font_size: self.font_size,
-            color: color,
+            color,
         }
     }
 }

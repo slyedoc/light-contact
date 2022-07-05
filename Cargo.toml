@@ -1,7 +1,9 @@
 [package]
 name = "light-contact"
 version = "0.1.0"
+publish = false
 edition = "2021"
+authors = ["Patrick Towles <james.towles@gmail.com>"]
 
 [profile.dev.package."*"]
 opt-level = 3

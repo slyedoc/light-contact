@@ -210,6 +210,7 @@ fn integrate(mut query: Query<(&mut Acceleration, &mut Transform, &mut LastPos)>
     }
 }
 
+#[allow(dead_code)]
 fn spawn_test_system(
     mut commands: Commands,
     input: Res<Input<KeyCode>>,
