@@ -10,6 +10,7 @@ pub fn spawn_light(mut commands: Commands) {
         ..default()
     });
 }
+
 pub fn spawn_ground(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -29,9 +30,8 @@ pub fn spawn_ground(
         .insert(Name::new("Ground"));
 }
 
-
 const NUM_BACKGROUND: usize = 2000;
-const BACKGROUND_RANGE: f32 = 1000.0;
+const BACKGROUND_RANGE: f32 = 500.0;
 
 #[allow(dead_code)]
 pub fn spawn_star_background(
@@ -40,7 +40,7 @@ pub fn spawn_star_background(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let mesh = meshes.add(Mesh::from(shape::Quad {
-        size: vec2(1.0, 1.0),        
+        size: vec2(1.0, 1.0),
         ..default()
     }));
 
@@ -54,7 +54,7 @@ pub fn spawn_star_background(
     let mut rng = rand::thread_rng();
 
     for _ in 0..NUM_BACKGROUND {
-        let mass_value_cube_root: f32 = rng.gen_range(0.2..1.0);
+        let size: f32 = rng.gen_range(1.0..2.0);
 
         let direction = Vec3::new(
             rng.gen_range(-1.0..1.0),
@@ -62,15 +62,15 @@ pub fn spawn_star_background(
             rng.gen_range(-1.0..1.0),
         )
         .normalize();
-            
-        let mut transform =  Transform {
+
+        let mut transform = Transform {
             translation: direction * BACKGROUND_RANGE,
-            scale: Vec3::splat(mass_value_cube_root),
-            ..Default::default()
-        }.looking_at(Vec3::ZERO, Vec3::Y);
+            scale: Vec3::splat(size),
+            ..default()
+        }
+        .looking_at(Vec3::ZERO, Vec3::Y);
 
-
-        transform.rotate(Quat::from_axis_angle( Vec3::Y, PI));
+        transform.rotate(Quat::from_axis_angle(transform.right(), PI));
 
         commands.entity(background).with_children(|parent| {
             parent.spawn_bundle(PbrBundle {

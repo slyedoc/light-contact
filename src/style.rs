@@ -48,10 +48,10 @@ fn button_color_system(
         (&Interaction, &mut UiColor),
         (Changed<Interaction>, With<Button>),
     >,
-    
+
     style: Res<AppStyle>,
 ) {
-    for (interaction, mut color) in interaction_query.iter_mut() {        
+    for (interaction, mut color) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Clicked => {
                 *color = style.pressed_button.into();

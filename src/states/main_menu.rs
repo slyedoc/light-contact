@@ -1,4 +1,4 @@
-use bevy::{app::AppExit, prelude::*, math::vec3, render::camera::Camera3d};
+use bevy::{app::AppExit, math::vec3, prelude::*, render::camera::Camera3d};
 
 use crate::{cleanup_system, enviroment::*, fadeout::Fadeout, style::AppStyle, AppState};
 
@@ -16,13 +16,13 @@ impl Plugin for MainMenuPlugin {
         app.add_system_set(
             SystemSet::on_enter(AppState::MainMenu)
                 .with_system(setup)
-                .with_system(spawn_light)                
+                .with_system(spawn_light)
                 .with_system(spawn_ground),
         )
         .add_system_set(
             SystemSet::on_resume(AppState::MainMenu)
                 .with_system(setup)
-                .with_system(spawn_light)                
+                .with_system(spawn_light)
                 .with_system(spawn_ground),
         )
         .add_system_set(SystemSet::on_update(AppState::MainMenu).with_system(button_system))
@@ -34,13 +34,13 @@ fn setup(
     mut commands: Commands,
     style: Res<AppStyle>,
     mut clear_color: ResMut<ClearColor>,
-    mut camera_query: Query<&mut Transform, With<Camera3d>>,    
+    mut camera_query: Query<&mut Transform, With<Camera3d>>,
 ) {
     // move camera
-     for mut t in camera_query.iter_mut() {
-         t.translation = vec3(0.0, 2.0, -5.0);
-         //camera_trans.look_at(Vec3::Y, Vec3::ZERO);
-     }
+    for mut t in camera_query.iter_mut() {
+        t.translation = vec3(0.0, 2.0, -5.0);
+        //camera_trans.look_at(Vec3::Y, Vec3::ZERO);
+    }
 
     clear_color.0 = Color::GRAY;
 

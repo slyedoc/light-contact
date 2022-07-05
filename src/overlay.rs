@@ -114,13 +114,9 @@ fn update_fps(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<Fp
     }
 }
 
-
 fn update_game_state(mut query: Query<&mut Text, With<AppStateText>>, state: Res<State<AppState>>) {
     for mut text in query.iter_mut() {
         // Update the value of the second section
-        text.sections[1].value = format!(
-            "{:?}", 
-            state.current()
-        );
+        text.sections[1].value = format!("{:?}", state.current());
     }
 }

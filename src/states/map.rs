@@ -1,10 +1,7 @@
-use crate::{cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState, assets::SpaceAssets};
-use bevy::{
-    core::FixedTimestep,
-    math::{ vec3},
-    prelude::*,
-    render::camera::Camera3d,
+use crate::{
+    assets::SpaceAssets, cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState,
 };
+use bevy::{core::FixedTimestep, math::vec3, prelude::*, render::camera::Camera3d, gltf::Gltf};
 use rand::{thread_rng, Rng};
 
 pub struct MapPlugin;
@@ -16,7 +13,6 @@ impl Plugin for MapPlugin {
                 .with_system(setup)
                 .with_system(spawn_star_background)
                 .with_system(generate_bodies),
-                
         )
         //.add_system_set(SystemSet::on_update(AppState::MainMenu).with_system(button_system))
         .add_system_set(SystemSet::on_update(AppState::Map).with_system(escape_system))
@@ -25,7 +21,7 @@ impl Plugin for MapPlugin {
                 .with_run_criteria(FixedTimestep::step(DELTA_TIME))
                 .with_system(interact_bodies)
                 .with_system(integrate.after(interact_bodies))
-                .with_system(spawn_test_system)
+                //.with_system(spawn_test_system),
         )
         .add_system_set(SystemSet::on_exit(AppState::Map).with_system(cleanup_system));
     }
@@ -44,8 +40,6 @@ fn setup(
         c.translation = vec3(0.0, 10.0, -50.0);
         c.look_at(Vec3::ZERO, Vec3::Y)
     }
-
-    //camera_trans.look_at(Vec3::Y, Vec3::ZERO);
 }
 
 #[allow(dead_code)]
@@ -151,7 +145,6 @@ fn generate_bodies(
     }
 
     // add bigger "star" body in the center
-
     commands.entity(bodies).with_children(|parent| {
         parent
             .spawn_bundle(BodyBundle {
@@ -170,13 +163,22 @@ fn generate_bodies(
                 mass: Mass(1000.0),
                 ..Default::default()
             })
-            .insert(PointLight {
-                intensity: 100000.0,
-                range: 1000.0,
-                color: Color::ORANGE_RED,
-                ..Default::default()
-            })
             .insert(Name::new("Star"));
+
+        // star light
+        parent
+            .spawn_bundle(PointLightBundle {
+                transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                point_light: PointLight {
+                    color: Color::rgb(1.0, 1.0, 1.0),
+                    intensity: 100_000.0,
+                    radius: 1000.0,
+                    range: 1000.0,
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(Name::new("Star Light"));
     });
 }
 
@@ -195,8 +197,6 @@ fn interact_bodies(mut query: Query<(&Mass, &GlobalTransform, &mut Acceleration)
     }
 }
 
-// TODO: something is wrong with system order, half the time it blows up
-#[allow(dead_code)]
 fn integrate(mut query: Query<(&mut Acceleration, &mut Transform, &mut LastPos)>) {
     let dt_sq = (DELTA_TIME * DELTA_TIME) as f32;
     for (mut acceleration, mut transform, mut last_pos) in query.iter_mut() {
@@ -210,18 +210,19 @@ fn integrate(mut query: Query<(&mut Acceleration, &mut Transform, &mut LastPos)>
     }
 }
 
-
-fn spawn_test_system(mut commands: Commands, input: Res<Input<KeyCode>>, space_assets: Res<SpaceAssets>)  {
+fn spawn_test_system(
+    mut commands: Commands,
+    input: Res<Input<KeyCode>>,
+    space_assets: Res<SpaceAssets>,
+    assets_gltf: Res<Assets<Gltf>>,
+) {
     if input.just_pressed(KeyCode::Key3) {
-            // to be able to position our 3d model:
-    // spawn a parent entity with a TransformBundle
-    // and spawn our gltf as a scene under it
-        commands.spawn_bundle(TransformBundle {
-            local: Transform::from_xyz(2.0, 0.0, -5.0),
-            global: GlobalTransform::identity(),
-        }).with_children(|parent| {
-            parent.spawn_scene(space_assets.astronaut_a.clone());
-        });
+        // to be able to position our 3d model:
+        // spawn a parent entity with a TransformBundle
+        // and spawn our gltf as a scene under it
 
+        if let Some(gltf) = assets_gltf.get(&space_assets.astronaut_a) {
+            commands.spawn_scene(gltf.scenes[0].clone());
+        }
     }
 }
