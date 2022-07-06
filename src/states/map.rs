@@ -1,28 +1,35 @@
 use crate::{
-    assets::SpaceAssets, cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState,
+   cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState, DELTA_TIME,
 };
-use bevy::{core::FixedTimestep, gltf::Gltf, math::vec3, prelude::*, render::camera::Camera3d};
+use bevy::{ math::vec3, prelude::*, render::camera::Camera3d};
+use iyes_loopless::prelude::*;
 use rand::{thread_rng, Rng};
 
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_enter(AppState::Map)
+
+        // ... add systems to it ..
+        app.add_enter_system_set(
+            AppState::Map,
+            SystemSet::new()
                 .with_system(setup)
                 .with_system(spawn_star_background)
-                .with_system(generate_bodies),
+                .with_system(generate_bodies)
+                .with_system(spawn_mars),
         )
-        //.add_system_set(SystemSet::on_update(AppState::MainMenu).with_system(button_system))
-        .add_system_set(SystemSet::on_update(AppState::Map).with_system(escape_system))
-        .add_system_set(
-            SystemSet::on_update(AppState::Map)
-                .with_run_criteria(FixedTimestep::step(DELTA_TIME))
-                .with_system(interact_bodies)
-                .with_system(integrate.after(interact_bodies)), //.with_system(spawn_test_system),
-        )
-        .add_system_set(SystemSet::on_exit(AppState::Map).with_system(cleanup_system));
+        .add_system(escape_system.run_in_state(AppState::Map))
+        // .add_stage_before(
+        //     CoreStage::Update,
+        //     "my_fixed_update",
+        //     FixedTimestepStage::new(Duration::from_secs_f64(DELTA_TIME)).with_stage( 
+        //         SystemStage::parallel()
+        //             .with_system(interact_bodies)
+        //             .with_system(integrate.after(interact_bodies))
+        //         ),
+        // )
+        .add_exit_system(AppState::Map, cleanup_system);
     }
 }
 
@@ -41,21 +48,8 @@ fn setup(
     }
 }
 
-#[allow(dead_code)]
-fn setup_ship(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    // create some orbital bodies that
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: 1.0,
-                ..default()
-            })),
-            ..default()
-        })
-        .insert(Name::new("Ship"));
-}
+// TODO, move this to dynamic plugin for my physics
 
-const DELTA_TIME: f64 = 1.0 / 60.0;
 const GRAVITY_CONSTANT: f32 = 0.001;
 const SOFTENING: f32 = 0.01;
 const NUM_BODIES: usize = 20;
@@ -206,23 +200,5 @@ fn integrate(mut query: Query<(&mut Acceleration, &mut Transform, &mut LastPos)>
         acceleration.0 = Vec3::ZERO;
         last_pos.0 = transform.translation;
         transform.translation = new_pos;
-    }
-}
-
-#[allow(dead_code)]
-fn spawn_test_system(
-    mut commands: Commands,
-    input: Res<Input<KeyCode>>,
-    space_assets: Res<SpaceAssets>,
-    assets_gltf: Res<Assets<Gltf>>,
-) {
-    if input.just_pressed(KeyCode::Key3) {
-        // to be able to position our 3d model:
-        // spawn a parent entity with a TransformBundle
-        // and spawn our gltf as a scene under it
-
-        if let Some(gltf) = assets_gltf.get(&space_assets.astronaut_a) {
-            commands.spawn_scene(gltf.scenes[0].clone());
-        }
     }
 }

@@ -22,7 +22,7 @@ default = [
     "bevy/png",
     "bevy/x11",
     "bevy_kira_audio/ogg",
-    "bevy/bevy_gltf"
+    "bevy/bevy_gltf",    
 ]
 
 dev = [
@@ -32,13 +32,16 @@ dev = [
 [dependencies]
 bevy = { version = "0.7", default-features = false }
 sly_camera_controller = { git = "https://github.com/slyedoc/sly_camera_controller", branch = "main" }
-sly_physics = { git = "https://github.com/slyedoc/sly_physics", branch = "main" }
+#sly_physics = { git = "https://github.com/slyedoc/sly_physics", branch = "main" }
+sly_physics = { path = "../sly_physics" }
 bevy-inspector-egui = "0.11.0"
-bevy_asset_loader = { git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["3d"] }
-bevy_kira_audio = { version = "0.10" }
-
+bevy_kira_audio = "0.10"
+bevy_asset_loader = { git = "https://github.com/NiklasEi/bevy_asset_loader", features = [ "stageless"] }
+iyes_loopless = { git = "https://github.com/NiklasEi/iyes_loopless", branch = "loopless-schedule-ext-trait", features = ["states"] }
 #bevy_infinite_grid = { git = "https://github.com/ForesightMiningSoftwareCorporation/bevy_infinite_grid", branch = "main" }
 rand = "0.8.5"
+
+[patch.crates-io]
 
 #bevy = { git = "https://github.com/bevyengine/bevy", branch = "main" }
 
@@ -46,8 +49,8 @@ rand = "0.8.5"
 #bevy-ui-navigation = { path = "../ui-navigation" }
 #bevy_asset_loader = "0.11.0"
 
-[target.'cfg(target_os = "linux")'.dependencies]
-winit = { version = "0.25", features=["x11"]}
+#[target.'cfg(target_os = "linux")'.dependencies]
+#winit = { version = "0.25", features=["x11"] }
 
 [build-dependencies]
 embed-resource = "1.4"

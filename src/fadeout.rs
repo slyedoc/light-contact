@@ -1,24 +1,15 @@
 use bevy::prelude::*;
 
-use crate::AppState;
 pub struct FadeoutPlugin;
 
-#[derive(Debug, Component, Clone, Copy)]
-pub enum Fadeout {
-    Push(AppState),
-    Pop,
-}
-
-//
-
 impl Plugin for FadeoutPlugin {
-    fn build(&self, app: &mut App) {
-        app //.add_plugin(Material2dPlugin::<FadeoutMaterial>::default())
-            //.add_startup_system(setup)
-            .add_event::<Fadeout>()
-            // .add_system(fadeout)
-            // .add_system(ui_fadeout)
-            .add_system(create_fadeout);
+    fn build(&self, _app: &mut App) {
+        // app //.add_plugin(Material2dPlugin::<FadeoutMaterial>::default())
+        //     //.add_startup_system(setup)
+          
+        //     // .add_system(fadeout)
+        //     // .add_system(ui_fadeout)
+        //     .add_system(create_fadeout);
     }
 }
 
@@ -69,16 +60,6 @@ impl Plugin for FadeoutPlugin {
 //     }
 // }
 
-pub fn create_fadeout(mut fadeout_event: EventReader<Fadeout>, mut state: ResMut<State<AppState>>) {
-    for e in fadeout_event.iter() {
-        match e {
-            Fadeout::Push(target) => {
-                state.push(*target).unwrap();
-            }
-            Fadeout::Pop => state.pop().unwrap(),
-        }
-    }
-}
 
 // fn setup(
 //     mut commands: Commands,

@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::assets::UiAssets;
+
 pub struct StylePlugin;
 
 impl Plugin for StylePlugin {
@@ -15,30 +17,28 @@ pub struct AppStyle {
     pub hovered_button: Color,
     pub pressed_button: Color,
     pub clear: Color,
-    pub font: Handle<Font>,
     pub font_size: f32,
 }
-impl AppStyle {
-    pub fn overlay_text(&self, color: Color) -> TextStyle {
-        TextStyle {
-            font: self.font.clone(),
-            font_size: self.font_size,
-            color,
-        }
-    }
-}
 
-impl FromWorld for AppStyle {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.get_resource::<AssetServer>().unwrap();
+impl Default for AppStyle {
+    fn default() -> Self {
         Self {
             normal_button: Color::rgb(0.15, 0.15, 0.15),
             hovered_button: Color::rgb(0.25, 0.25, 0.25),
             pressed_button: Color::rgb(0.35, 0.75, 0.35),
             normal_button_text: Color::WHITE,
-            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
             font_size: 30.0,
             clear: Color::rgba(0.0, 0.0, 0.0, 0.0),
+        }
+    }
+}
+
+impl AppStyle {
+    pub fn overlay_text(&self, color: Color, ui_assets: &UiAssets) -> TextStyle {
+        TextStyle {
+            font: ui_assets.font.clone(),
+            font_size: self.font_size,
+            color,
         }
     }
 }

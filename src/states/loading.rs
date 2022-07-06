@@ -1,8 +1,10 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
-use bevy_asset_loader::prelude::*;
+use iyes_loopless::prelude::*;
 
 use crate::{
-    assets::{AudioAssets, SpaceAssets},
+    assets::{UiAssets},
     cleanup_system,
     style::AppStyle,
     AppState,
@@ -12,22 +14,23 @@ pub struct LoadingPlugin;
 
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_loading_state(
-            LoadingState::new(AppState::Loading)
-                .continue_to_state(AppState::MainMenu)
-                .with_collection::<AudioAssets>()
-                .with_collection::<SpaceAssets>(),
+        app.add_enter_system(AppState::Loading, setup)
+        .add_stage_before(
+            CoreStage::Update,
+            "loading_update",
+            FixedTimestepStage::new(Duration::from_secs_f64(0.5)).with_stage( 
+                SystemStage::parallel()
+                    .with_system(update_text)
+            ),
         )
-        .add_system_set(SystemSet::on_enter(AppState::Loading).with_system(setup))
-        .add_system_set(SystemSet::on_update(AppState::Loading).with_system(update_text))
-        .add_system_set(SystemSet::on_exit(AppState::Loading).with_system(cleanup_system));
+        .add_exit_system(AppState::Loading, cleanup_system);
     }
 }
 
 #[derive(Component)]
 struct LoadingText;
 
-fn setup(mut commands: Commands, style: Res<AppStyle>, mut clear_color: ResMut<ClearColor>) {
+fn setup(mut commands: Commands, style: Res<AppStyle>, ui_assets: Res<UiAssets>, mut clear_color: ResMut<ClearColor>) {
     clear_color.0 = Color::BLACK;
 
     commands
@@ -35,24 +38,26 @@ fn setup(mut commands: Commands, style: Res<AppStyle>, mut clear_color: ResMut<C
             style: Style {
                 position_type: PositionType::Absolute,
                 position: Rect::<Val> {
-                    right: Val::Px(10.0),
-                    bottom: Val::Px(10.0),
+                    left: Val::Percent(85.0),
+                    bottom: Val::Percent(15.0),
                     ..Default::default()
                 },
-                align_self: AlignSelf::FlexEnd,
+                align_self: AlignSelf::FlexStart,
                 ..Default::default()
             },
             // Use `Text` directly
             text: Text {
+                alignment: TextAlignment {
+                    vertical: VerticalAlign::Center, horizontal: HorizontalAlign::Left },
                 // Construct a `Vec` of `TextSection`s
                 sections: vec![
                     TextSection {
-                        value: "Loading".to_string(),
-                        style: style.overlay_text(Color::WHITE),
+                        value: "Loading ".to_string(),
+                        style: style.overlay_text(Color::WHITE, &ui_assets),
                     },
                     TextSection {
                         value: "".to_string(),
-                        style: style.overlay_text(Color::GOLD),
+                        style: style.overlay_text(Color::GOLD, &ui_assets),
                     },
                 ],
                 ..Default::default()
@@ -72,6 +77,7 @@ fn update_text(mut query: Query<&mut Text, With<LoadingText>>, mut count: Local<
             _ => "...",
         };
         text.sections[1].value = str.to_string();
+        *count += 1;
         *count %= 3;
     }
 }

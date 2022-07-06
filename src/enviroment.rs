@@ -3,6 +3,8 @@ use std::f32::consts::*;
 use bevy::{math::vec2, prelude::*};
 use rand::Rng;
 
+use crate::assets::SpaceAssets;
+
 pub fn spawn_light(mut commands: Commands) {
     // light
     commands.spawn_bundle(DirectionalLightBundle {
@@ -90,3 +92,35 @@ pub fn spawn_star_background(
         });
     }
 }
+
+
+#[allow(dead_code)]
+pub fn spawn_mars(
+    mut commands: Commands,    
+    space_assets: Res<SpaceAssets>,
+) {
+    let mut pos = Vec3::new(0.0, 0.0, 0.0);
+    let offset = Vec3::new(-2.0, 0.0, 0.0);
+    let mut i = 0;
+    for  m in &space_assets.models {        
+        spawn_scene(&mut commands, pos, &m, format!("Space - {}", i));
+        pos += offset;
+        i += 1;
+    }
+       
+
+}
+
+fn spawn_scene(commands: &mut Commands, pos: Vec3, scene: &Handle<Scene>, name: String) {
+
+    commands
+        .spawn_bundle(TransformBundle {
+            local: Transform::from_translation(pos), // scale it down so we can see it
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn_scene(scene.clone());
+        })
+        .insert(Name::new(name));
+}
+

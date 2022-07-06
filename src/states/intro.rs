@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_kira_audio::Audio;
+use iyes_loopless::prelude::*;
 
 use crate::{
     assets::AudioAssets, cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState,
@@ -9,15 +10,16 @@ pub struct IntroPlugin;
 
 impl Plugin for IntroPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_enter(AppState::Intro)
+        app.add_enter_system_set(
+            AppState::Intro,
+            SystemSet::new()
                 .with_system(setup)
                 .with_system(spawn_light)
                 .with_system(spawn_ground)
                 .with_system(start_audio),
         )
-        .add_system_set(SystemSet::on_update(AppState::Intro).with_system(escape_system))
-        .add_system_set(SystemSet::on_exit(AppState::Intro).with_system(cleanup_system));
+        .add_system(escape_system.run_in_state(AppState::Intro))
+        .add_exit_system(AppState::Intro, cleanup_system);
     }
 }
 

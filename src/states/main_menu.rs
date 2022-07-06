@@ -1,38 +1,40 @@
 use bevy::{app::AppExit, math::vec3, prelude::*, render::camera::Camera3d};
+use iyes_loopless::prelude::*;
 
-use crate::{cleanup_system, enviroment::*, fadeout::Fadeout, style::AppStyle, AppState};
+use crate::{
+    assets::UiAssets, cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState,
+};
 
 pub struct MainMenuPlugin;
 
 #[derive(Debug, Component, Clone, Copy)]
 enum Button {
+    Sandbox,
     Intro,
-    Map,
+    Map,    
     Exit,
 }
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_enter(AppState::MainMenu)
+        app.add_enter_system_set(
+            AppState::MainMenu,
+            SystemSet::new()
                 .with_system(setup)
                 .with_system(spawn_light)
-                .with_system(spawn_ground),
+                //.with_system(spawn_ground)
+                .with_system(spawn_mars),
         )
-        .add_system_set(
-            SystemSet::on_resume(AppState::MainMenu)
-                .with_system(setup)
-                .with_system(spawn_light)
-                .with_system(spawn_ground),
-        )
-        .add_system_set(SystemSet::on_update(AppState::MainMenu).with_system(button_system))
-        .add_system_set(SystemSet::on_pause(AppState::MainMenu).with_system(cleanup_system));
+        .add_system(button_system.run_in_state(AppState::MainMenu))
+        .add_system(escape_system.run_in_state(AppState::MainMenu))
+        .add_exit_system(AppState::MainMenu, cleanup_system);
     }
 }
 
 fn setup(
     mut commands: Commands,
     style: Res<AppStyle>,
+    ui_assets: Res<UiAssets>,
     mut clear_color: ResMut<ClearColor>,
     mut camera_query: Query<&mut Transform, With<Camera3d>>,
 ) {
@@ -72,7 +74,7 @@ fn setup(
                     text: Text::with_section(
                         "Light Contact",
                         TextStyle {
-                            font: style.font.clone(),
+                            font: ui_assets.font.clone(),
                             font_size: 90.0,
                             color: Color::GOLD,
                         },
@@ -104,7 +106,7 @@ fn setup(
                             text: Text::with_section(
                                 "from TwinGames",
                                 TextStyle {
-                                    font: style.font.clone(),
+                                    font: ui_assets.font.clone(),
                                     //ui_font.base.clone(),
                                     font_size: style.font_size,
                                     color: Color::GOLD,
@@ -138,22 +140,24 @@ fn setup(
         })
         .insert(Name::new("Menu"))
         .with_children(|parent| {
-            create_menu_button(Button::Intro, "Intro", parent, &style);
-            create_menu_button(Button::Map, "Map", parent, &style);
-            create_menu_button(Button::Exit, "Exit", parent, &style);
+            create_menu_button(Button::Sandbox, "Sandbox", parent, &style, &ui_assets);
+            create_menu_button(Button::Intro, "Intro", parent, &style, &ui_assets);
+            create_menu_button(Button::Map, "Map", parent, &style, &ui_assets);
+            create_menu_button(Button::Exit, "Exit", parent, &style, &ui_assets);
         });
 }
 
 fn button_system(
+    mut commands: Commands,
     mut interaction_query: Query<(&Interaction, &Button), (Changed<Interaction>, With<Button>)>,
     mut app_exit: EventWriter<AppExit>,
-    mut fade_event: EventWriter<Fadeout>,
 ) {
     for (interaction, btn) in interaction_query.iter_mut() {
         if Interaction::Clicked == *interaction {
             match btn {
-                Button::Map => fade_event.send(Fadeout::Push(AppState::Map)),
-                Button::Intro => fade_event.send(Fadeout::Push(AppState::Intro)),
+                Button::Sandbox => commands.insert_resource(NextState(AppState::Sandbox)),
+                Button::Map => commands.insert_resource(NextState(AppState::Map)),
+                Button::Intro => commands.insert_resource(NextState(AppState::Intro)),
                 Button::Exit => app_exit.send(AppExit),
             }
         }
@@ -164,7 +168,8 @@ fn create_menu_button(
     btn: Button,
     text: impl Into<String>,
     parent: &mut ChildBuilder,
-    style: &AppStyle,
+    _style: &AppStyle,
+    ui_assets: &UiAssets,
 ) {
     parent
         .spawn_bundle(ButtonBundle {
@@ -183,7 +188,7 @@ fn create_menu_button(
                 text: Text::with_section(
                     text,
                     TextStyle {
-                        font: style.font.clone(),
+                        font: ui_assets.font.clone(),
                         font_size: 40.0,
                         color: Color::rgb(0.9, 0.9, 0.9),
                     },

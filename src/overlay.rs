@@ -2,19 +2,19 @@ use bevy::{
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
+use iyes_loopless::{prelude::AppLooplessStateExt, state::CurrentState};
 
-use crate::{style::AppStyle, AppState, Keep};
+use crate::{style::AppStyle, AppState, Keep, assets::UiAssets};
 
 pub struct OverlayPlugin;
 
 impl Plugin for OverlayPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-            .add_startup_system(setup_overlay)
+            .add_enter_system(AppState::Loading, setup_overlay)          
             .add_system(update_game_state)
             .add_system(update_fps);
-        //.add_system(update_bvh_tri_count)
-        //.add_system(update_render_time)
+        
     }
 }
 
@@ -30,7 +30,7 @@ struct RenderTimeText;
 #[derive(Component)]
 struct AppStateText;
 
-fn setup_overlay(mut commands: Commands, style: Res<AppStyle>) {
+fn setup_overlay(mut commands: Commands, style: Res<AppStyle>, ui_assets: Res<UiAssets>) {
     commands
         .spawn_bundle(TextBundle {
             style: Style {
@@ -41,18 +41,17 @@ fn setup_overlay(mut commands: Commands, style: Res<AppStyle>) {
                     left: Val::Px(10.0),
                     ..Default::default()
                 },
-
                 ..Default::default()
             },
             text: Text {
                 sections: vec![
                     TextSection {
                         value: "State ".to_string(),
-                        style: style.overlay_text(Color::WHITE),
+                        style: style.overlay_text(Color::WHITE, &ui_assets),
                     },
                     TextSection {
                         value: "".to_string(),
-                        style: style.overlay_text(Color::GOLD),
+                        style: style.overlay_text(Color::GOLD, &ui_assets),
                     },
                 ],
                 ..Default::default()
@@ -81,11 +80,11 @@ fn setup_overlay(mut commands: Commands, style: Res<AppStyle>) {
                 sections: vec![
                     TextSection {
                         value: "FPS: ".to_string(),
-                        style: style.overlay_text(Color::WHITE),
+                        style: style.overlay_text(Color::WHITE, &ui_assets),
                     },
                     TextSection {
                         value: "".to_string(),
-                        style: style.overlay_text(Color::GOLD),
+                        style: style.overlay_text(Color::GOLD, &ui_assets),
                     },
                 ],
                 ..Default::default()
@@ -114,9 +113,9 @@ fn update_fps(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<Fp
     }
 }
 
-fn update_game_state(mut query: Query<&mut Text, With<AppStateText>>, state: Res<State<AppState>>) {
+fn update_game_state(mut query: Query<&mut Text, With<AppStateText>>, state: Res<CurrentState<AppState>>) {
     for mut text in query.iter_mut() {
         // Update the value of the second section
-        text.sections[1].value = format!("{:?}", state.current());
+        text.sections[1].value = format!("{:?}", state.0);
     }
 }

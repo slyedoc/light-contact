@@ -1,10 +1,27 @@
-use bevy::{gltf::Gltf, prelude::*};
+use bevy::{prelude::*};
 use bevy_asset_loader::prelude::*;
+
+
+
+#[derive(AssetCollection)]
+pub struct UiAssets {
+    #[asset(path = "fonts/FiraSans-Bold.ttf")]
+    pub font: Handle<Font>,
+}
+
 
 #[derive(AssetCollection)]
 pub struct SpaceAssets {
-    #[asset(path = "space/astronautA.glb#Node-astronautA")]
-    pub astronaut_a: Handle<Gltf>,
+    #[asset(paths(
+        "space/astronautA.glb#Scene0",
+        "space/astronautB.glb#Scene0",
+        "space/alien.glb#Scene0",
+        "space/barrel.glb#Scene0",
+        "space/barrels_rail.glb#Scene0",
+        "space/barrels.glb#Scene0",
+        "space/bones.glb#Scene0",
+    ), collection(typed))]
+    pub models: Vec<Handle<Scene>>,
 }
 
 #[derive(AssetCollection)]
