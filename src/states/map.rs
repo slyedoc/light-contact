@@ -1,7 +1,7 @@
-use crate::{
-   cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState, DELTA_TIME,
-};
-use bevy::{ math::vec3, prelude::*, render::camera::Camera3d};
+use std::time::Duration;
+
+use crate::{cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState, DELTA_TIME};
+use bevy::{math::vec3, prelude::*, render::camera::Camera3d};
 use iyes_loopless::prelude::*;
 use rand::{thread_rng, Rng};
 
@@ -9,26 +9,24 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-
         // ... add systems to it ..
         app.add_enter_system_set(
             AppState::Map,
             SystemSet::new()
                 .with_system(setup)
                 .with_system(spawn_star_background)
-                .with_system(generate_bodies)
-                .with_system(spawn_mars),
+                .with_system(spawn_solar_system),
         )
         .add_system(escape_system.run_in_state(AppState::Map))
-        // .add_stage_before(
-        //     CoreStage::Update,
-        //     "my_fixed_update",
-        //     FixedTimestepStage::new(Duration::from_secs_f64(DELTA_TIME)).with_stage( 
-        //         SystemStage::parallel()
-        //             .with_system(interact_bodies)
-        //             .with_system(integrate.after(interact_bodies))
-        //         ),
-        // )
+         .add_stage_before(
+             CoreStage::Update,
+             "my_fixed_update",
+             FixedTimestepStage::new(Duration::from_secs_f64(DELTA_TIME)).with_stage(
+                 SystemStage::parallel()
+                     .with_system(interact_bodies)
+                     //.with_system(integrate.after(interact_bodies))
+                 ),
+         )
         .add_exit_system(AppState::Map, cleanup_system);
     }
 }
@@ -70,25 +68,28 @@ struct BodyBundle {
     acceleration: Acceleration,
 }
 
-fn generate_bodies(
+fn spawn_solar_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    
     let mesh = meshes.add(Mesh::from(shape::Icosphere {
         radius: 1.0,
         subdivisions: 3,
     }));
-
-    let pos_range = 50.0..100.0;
-    let color_range = 0.5..1.0;
-    let vel_range = -0.5..0.5;
 
     let bodies = commands
         .spawn_bundle((Transform::default(), GlobalTransform::default()))
         .insert(Name::new("Solar System"))
         .id();
 
+    let pos_range = 50.0..100.0;
+    let color_range = 0.5..1.0;
+    let vel_range = -0.5..0.5;
+
+    // add bigger "star" body in the center
+  
     let mut rng = thread_rng();
     for i in 0..NUM_BODIES {
         let mass_value_cube_root: f32 = rng.gen_range(0.4..6.0);
@@ -137,7 +138,6 @@ fn generate_bodies(
         });
     }
 
-    // add bigger "star" body in the center
     commands.entity(bodies).with_children(|parent| {
         parent
             .spawn_bundle(BodyBundle {
@@ -173,6 +173,7 @@ fn generate_bodies(
             })
             .insert(Name::new("Star Light"));
     });
+
 }
 
 fn interact_bodies(mut query: Query<(&Mass, &GlobalTransform, &mut Acceleration)>) {
@@ -190,7 +191,7 @@ fn interact_bodies(mut query: Query<(&Mass, &GlobalTransform, &mut Acceleration)
     }
 }
 
-fn integrate(mut query: Query<(&mut Acceleration, &mut Transform, &mut LastPos)>) {
+fn _integrate(mut query: Query<(&mut Acceleration, &mut Transform, &mut LastPos)>) {
     let dt_sq = (DELTA_TIME * DELTA_TIME) as f32;
     for (mut acceleration, mut transform, mut last_pos) in query.iter_mut() {
         // verlet integration

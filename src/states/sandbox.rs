@@ -2,34 +2,34 @@ use std::f32::consts::FRAC_PI_2;
 
 use bevy::{math::vec3, prelude::*};
 use bevy_inspector_egui::{Inspectable, InspectorPlugin};
-
 use iyes_loopless::prelude::*;
-use sly_physics::{
-    Collider, LinearVelocity, Mass, PhysicsConfig, RigidBodyMode, RigidbodyBundle,
-    PHYSISCS_TIMESTEP,
-};
+use sly_physics::{prelude::*, PHYSISCS_TIMESTEP};
 
-use crate::{cleanup_system, enviroment::*, escape_system, style::AppStyle, AppState};
+use crate::{*, enviroment::*, escape_system, AppState};
 
 pub struct SandboxPlugin;
 
 impl Plugin for SandboxPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(InspectorPlugin::<Stack>::new())
+        app
+            .add_plugin(InspectorPlugin::<Stack>::new())
+            .add_startup_system(hide_window::<Stack>)
             .add_enter_system_set(
                 AppState::Sandbox,
                 SystemSet::new()
                     .with_system(setup)
                     .with_system(spawn_light)
-                    .with_system(setup_room),
+                    .with_system(setup_room)
+                    .with_system(show_window::<Stack>),
             )
             .add_system(escape_system.run_in_state(AppState::Sandbox))
-            //.add_system(apply_scale.run_in_state(AppState::Sandbox))
-            .add_exit_system(AppState::Sandbox, cleanup_system);
+            .add_system(apply_scale.run_in_state(AppState::Sandbox))
+            .add_exit_system(AppState::Sandbox, cleanup_system)
+            .add_exit_system(AppState::Sandbox, hide_window::<Stack>);
     }
 }
 
-fn setup(mut _commands: Commands, _style: Res<AppStyle>) {}
+fn setup() {}
 
 fn apply_scale(mut config: ResMut<PhysicsConfig>, stack: Res<Stack>) {
     config.time = stack.time_scale * PHYSISCS_TIMESTEP as f32;
@@ -83,7 +83,7 @@ pub fn setup_room(
             }),
             ..default()
         })
-        .insert_bundle(RigidbodyBundle {
+        .insert_bundle(RigidBodyBundle {
             collider: Collider::Cuboid {
                 size: vec3(floor_size, 1.0, floor_size),
             },
@@ -110,7 +110,7 @@ pub fn setup_room(
                 }),
                 ..default()
             })
-            .insert_bundle(RigidbodyBundle {
+            .insert_bundle(RigidBodyBundle {
                 collider: Collider::Cuboid {
                     size: vec3(floor_size, wall_height, 1.0),
                 },
@@ -150,7 +150,7 @@ pub fn setup_room(
                         transform: Transform::from_translation(pos),
                         ..default()
                     })
-                    .insert_bundle(RigidbodyBundle {
+                    .insert_bundle(RigidBodyBundle {
                         collider: match stack.mode {
                             StackMode::Sphere => Collider::Sphere { radius: radius },
                             StackMode::Cube => Collider::Cuboid { size: Vec3::ONE },
@@ -181,7 +181,7 @@ pub fn setup_room(
             }),
             ..default()
         })
-        .insert_bundle(RigidbodyBundle {
+        .insert_bundle(RigidBodyBundle {
             linear_velocity: LinearVelocity(vec3(-stack.ball_velocity, 0.0, 0.0)),
             collider: Collider::Sphere {
                 radius: wreak_ball_radius,

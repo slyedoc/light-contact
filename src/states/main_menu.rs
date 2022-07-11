@@ -22,8 +22,8 @@ impl Plugin for MainMenuPlugin {
             SystemSet::new()
                 .with_system(setup)
                 .with_system(spawn_light)
-                //.with_system(spawn_ground)
-                .with_system(spawn_mars),
+                .with_system(spawn_ground)
+                .with_system(spawn_space_assets),
         )
         .add_system(button_system.run_in_state(AppState::MainMenu))
         .add_system(escape_system.run_in_state(AppState::MainMenu))
@@ -41,7 +41,7 @@ fn setup(
     // move camera
     for mut t in camera_query.iter_mut() {
         t.translation = vec3(0.0, 2.0, -5.0);
-        //camera_trans.look_at(Vec3::Y, Vec3::ZERO);
+        t.look_at( Vec3::ZERO, Vec3::Y);
     }
 
     clear_color.0 = Color::GRAY;

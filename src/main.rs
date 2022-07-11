@@ -12,7 +12,9 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(WindowDescriptor {
             present_mode: PresentMode::Fifo,
+            #[cfg(target_arch = "wasm32")]
             width: 800.0,
+            #[cfg(target_arch = "wasm32")]
             height: 600.0,
             title: "Light Contact".to_string(), // ToDo
             ..Default::default()
