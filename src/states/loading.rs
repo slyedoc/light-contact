@@ -60,7 +60,6 @@ fn setup(mut commands: Commands, style: Res<AppStyle>, ui_assets: Res<UiAssets>,
                         style: style.overlay_text(Color::GOLD, &ui_assets),
                     },
                 ],
-                ..Default::default()
             },
             ..Default::default()
         })

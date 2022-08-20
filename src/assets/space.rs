@@ -26,7 +26,8 @@ fn spawn_space_asset(
         let scene = space_assets.get(sa_type);
         commands.entity(e)
             .insert_bundle(RigidBodyBundle {
-                collider: Collider::sphere(0.5),                    
+                collider: Collider::Cuboid { size: Vec3::ONE },
+                center_of_mass: CenterOfMass(Vec3::Y),
                 ..default()
             })
             .with_children(|parent| {
@@ -105,7 +106,7 @@ impl SpaceAssets {
     }
 
     pub fn list() -> Vec<SpaceAssetType> {
-        return vec![
+        vec![
             SpaceAssetType::Character(Character::AstronautA),
             SpaceAssetType::Character(Character::AstronautB),
             SpaceAssetType::Character(Character::Alien),

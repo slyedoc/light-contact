@@ -152,7 +152,7 @@ pub fn setup_room(
                     })
                     .insert_bundle(RigidBodyBundle {
                         collider: match stack.mode {
-                            StackMode::Sphere => Collider::Sphere { radius: radius },
+                            StackMode::Sphere => Collider::Sphere { radius },
                             StackMode::Cube => Collider::Cuboid { size: Vec3::ONE },
                         },
                         mode: RigidBodyMode::Dynamic,

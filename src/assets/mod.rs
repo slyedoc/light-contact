@@ -10,7 +10,6 @@ impl Plugin for AppAssetsPlugin {
     fn build(&self, app: &mut App) {
         // assets
         app.add_plugin(SpaceAssetPlugin);
-
     }
 }
 

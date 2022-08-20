@@ -41,7 +41,6 @@ pub fn spawn_ground(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let size = vec3(100.0, 1.0, 100.0 );
-    info!("size {:?}", -size.y * 0.5);
     commands
         .spawn_bundle(PbrBundle {
             transform: Transform::from_xyz(0.0, -1.5, 0.0),
@@ -66,8 +65,6 @@ const BACKGROUND_RANGE: f32 = 500.0;
 
 #[derive(Component)]
 pub struct MovingBackground;
-
-
 
 #[allow(dead_code)]
 pub fn spawn_star_background(

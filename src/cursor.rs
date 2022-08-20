@@ -5,17 +5,18 @@ pub struct CursorPlugin;
 
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(load_cursor).add_system_to_stage(
-            CoreStage::PostUpdate,
-            move_cursor.after(PhysicsSystems::Resolved),
-        );
+        app.add_startup_system(setup_cursor)
+            .add_system_to_stage(
+                PhysicsFixedUpdate,
+                move_cursor.after(PhysicsSystems::ResolvePhase),
+            );
     }
 }
 
 #[derive(Component)]
 pub struct Cursor;
 
-fn load_cursor(
+fn setup_cursor(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -50,8 +51,7 @@ fn move_cursor(
     if let Some(window) = windows.get_primary() {
         if let Some(mouse_pos) = window.cursor_position() {
             if let Ok((trans, projection)) = camera_query.get_single() {
-                if let Ok((mut cursor_trans, mut cursor_vis)) = cusror_query.get_single_mut(){
-
+                if let Ok((mut cursor_trans, mut cursor_vis)) = cusror_query.get_single_mut() {
                     // create a ray
                     let mut ray = Ray::from_screenspace(mouse_pos, window, projection, trans);
 

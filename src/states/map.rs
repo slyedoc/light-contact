@@ -59,6 +59,7 @@ struct Acceleration(Vec3);
 #[derive(Component, Default)]
 struct LastPos(Vec3);
 
+
 #[derive(Bundle, Default)]
 struct BodyBundle {
     #[bundle]

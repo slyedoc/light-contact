@@ -20,7 +20,6 @@ use iyes_loopless::prelude::*;
 use sly_camera_controller::{CameraController, CameraControllerPlugin};
 use sly_physics::prelude::*;
 
-
 use assets::*;
 use cursor::*;
 use enviroment::*;
@@ -48,13 +47,12 @@ impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(AppState::Splash)
             .init_resource::<ResetTarget>()
-            
-            // crates
+            .add_plugin(WorldInspectorPlugin::new())
+            // external plugins
             .add_plugin(PhysicsPlugin)
+            .add_plugin(PhysicsDebugPlugin)
             .add_plugin(PhysicsBvhCameraPlugin)
             .add_plugin(CameraControllerPlugin)
-            .add_plugin(WorldInspectorPlugin::new())
-
             // local plugins
             .add_plugin(CursorPlugin)
             .add_plugin(AudioPlugin)
@@ -62,10 +60,8 @@ impl Plugin for AppPlugin {
             .add_plugin(OverlayPlugin)
             .add_plugin(EnviromentPlugin)
             .add_plugin(AppAssetsPlugin)
-
             // states
             .add_plugin(StatePlugin)
-
             // states
             .add_loading_state(
                 LoadingState::new(AppState::Splash)
@@ -79,11 +75,11 @@ impl Plugin for AppPlugin {
                     .with_collection::<SpaceAssets>(),
             )
             .add_startup_system(setup_camera)
-            
             // reset state
             .add_enter_system(AppState::Reset, reset)
             .add_system(reset_listen)
-            .add_system(toggle_state);
+            .add_system(toggle_physics)
+            .add_system(toggle_physics_debug);
     }
 }
 
@@ -99,38 +95,55 @@ fn setup_camera(mut commands: Commands) {
             ..default()
         })
         .insert(CameraController::default())
-        .insert(BvhCamera::new(256, 256))
+        .insert(BvhCamera::new(256, 256)) // only used for physics debug
         .insert(Player)
-
         .insert(Keep);
 }
 
-fn toggle_state(mut input: ResMut<Input<KeyCode>>, mut state: ResMut<State<PhysicsState>>) {
-    if input.just_pressed(KeyCode::Space) {
-        match state.current() {            
-            PhysicsState::Running => state.push(PhysicsState::Paused).unwrap(),
-            PhysicsState::Paused => state.pop().unwrap(),
-        }
-        input.clear();
+fn toggle_physics(
+    mut commands: Commands,
+    input: Res<Input<KeyCode>>,
+    state: Res<CurrentState<PhysicsState>>,
+) {
+    if input.just_pressed(KeyCode::Key1) {
+        let target = match state.0 {
+            PhysicsState::Running => PhysicsState::Paused,
+            PhysicsState::Paused => PhysicsState::Running,
+        };
+        //info!("Physics state: {:?}", target);
+        commands.insert_resource(NextState(target));
     }
 }
 
+fn toggle_physics_debug(
+    mut commands: Commands,
+    input: Res<Input<KeyCode>>,
+    state: Res<CurrentState<PhysicsDebugState>>,
+) {
+    if input.just_pressed(KeyCode::Key2) {
+        let target = match state.0 {
+            PhysicsDebugState::Running => PhysicsDebugState::Paused,
+            PhysicsDebugState::Paused => PhysicsDebugState::Running,
+        };
+        //info!("Physics debug: {:?}", target);
+        commands.insert_resource(NextState(target));
+    }
+}
 
 pub struct ResetTarget {
-    target: AppState,    
+    target: AppState,
 }
+
 impl Default for ResetTarget {
     fn default() -> Self {
         Self {
-            target: AppState::MainMenu,            
+            target: AppState::MainMenu,
         }
     }
 }
-pub fn reset(
-    mut commands: Commands,
-    reset_target: Res<ResetTarget>) {
+pub fn reset(mut commands: Commands, reset_target: Res<ResetTarget>) {
     // go back
-    commands.insert_resource(NextState(reset_target.target));    
+    commands.insert_resource(NextState(reset_target.target));
 }
 
 pub fn reset_listen(
@@ -142,8 +155,8 @@ pub fn reset_listen(
     if input.just_pressed(KeyCode::R) {
         reset_target.target = current_state.0;
 
-        commands.insert_resource(NextState(AppState::Reset));        
-        // TODO remove clear
+        commands.insert_resource(NextState(AppState::Reset));
+        // TODO: test if i still need clear
         input.clear();
     }
 }
